@@ -1,0 +1,47 @@
+# source will be downloaded prior to filling in jinja templates
+# Example assumes that this folder has setup.py in it
+source:
+  git_url: ../
+
+package:
+  name: platformio-helpers
+{% if GIT_DESCRIBE_NUMBER > '0' %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}.post{{ GIT_DESCRIBE_NUMBER }}
+{% else %}
+  version: {{ GIT_DESCRIBE_TAG[1:] }}.0
+{% endif %}
+
+
+build:
+  # If this is a new build for the same version, increment the build
+  # number. If you do not include this key, it defaults to 0.
+  number: 0
+  script: pip install .
+
+requirements:
+  build:
+    - conda-helpers
+    - path_helpers
+    - pip
+    - python 2.7*
+
+  run:
+    - conda-helpers
+    - path_helpers
+    - python 2.7*
+
+test:
+  imports:
+    - platformio_helpers
+
+about:
+  home: https://github.com/wheeler-microfluidics/platformio-helpers
+  license: BSD 3-Clause
+  license_family: BSD
+  license_file: LICENSE.md
+  summary: 'Helper functions, etc. for PlatformIO projects'
+  # doc_url:  http://platformio-helpers.readthedocs.org
+
+extra:
+  recipe-maintainers:
+    - cfobel

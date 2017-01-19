@@ -1,0 +1,7 @@
+include RELEASE-VERSION
+include version.py
+include setup.py
+include paver-minilib.zip
+recursive-include platformio_helpers *
+recursive-exclude platformio_helpers *.pyc
+recursive-exclude platformio_helpers *~
