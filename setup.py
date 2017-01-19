@@ -7,7 +7,7 @@ import version
 
 st.setup(name='platformio-helpers',
          version=version.getVersion(),
-         description='Add description here.',
+         description='Helpers functions, etc. for PlatformIO projects.',
          keywords='',
          author='Christian Fobel',
          author_email='christian@fobel.net',
