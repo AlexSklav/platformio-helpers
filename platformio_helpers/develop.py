@@ -29,6 +29,9 @@ def link(working_dir=None, package_name=None):
     See Also
     --------
     :func:`unlink`
+
+    .. versionchanged:: 0.3.2
+       Create ``.pioenvs`` directory in working directory if it doesn't exist.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
@@ -63,7 +66,10 @@ def link(working_dir=None, package_name=None):
     fw_bin_dir = pio_bin_dir.joinpath(package_name)
 
     if not fw_bin_dir.exists():
-        working_dir.joinpath('.pioenvs').junction(fw_bin_dir)
+        pioenvs_dir = working_dir.joinpath('.pioenvs')
+        # Create `.pioenvs` directory if it doesn't exist.
+        pioenvs_dir.makedirs_p()
+        pioenvs_dir.junction(fw_bin_dir)
 
     fw_config_ini = fw_bin_dir.joinpath('platformio.ini')
     if not fw_config_ini.exists():
