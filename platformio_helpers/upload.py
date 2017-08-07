@@ -4,6 +4,7 @@ import sys
 import tempfile as tmp
 
 import path_helpers as ph
+import conda_helpers as ch
 
 from . import conda_bin_path
 
@@ -67,6 +68,10 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     '''
     Upload pre-built binary to target.
 
+    .. versionchanged:: 0.3.1
+       Run upload command in activated Conda environment.  See  `issue 3
+       <https://github.com/wheeler-microfluidics/platformio-helpers/issues/3>`_.
+
     Parameters
     ----------
     project_dir : str
@@ -112,23 +117,23 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
         env_dir.copytree(temp_env_dir)
 
         env = os.environ.copy()
+        # Set the PlatformIO build environments directory for the upload shell
+        # environment.
         env['PLATFORMIO_ENVS_DIR'] = str(tempdir)
 
-        # Temporary workaround until we can figure out a way to
-        # launch MicroDrop in a way that runs the
-        # %CONDA_PREFIX%\etc\conda\activate.d scripts. See [1]
+        # Run the PlatformIO upload command in an activated Conda environment,
+        # e.g., to set `PLATFORMIO_HOME_DIR` and  `PLATFORMIO_LIB_EXTRA_DIRS`
+        # environment variables.
+        #
+        # See [issue #3][1].
         #
         # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
-        import conda_helpers as ch
-        env['PLATFORMIO_HOME_DIR'] = str(ch.conda_prefix() /
-            'share' / 'platformio')
-        env['PLATFORMIO_LIB_EXTRA_DIRS']= str(ch.conda_prefix() /
-            'Library' / 'include' / 'Arduino')
- 
-        command = ('pio run -e %s -t upload -t nobuild %s' %
-                   (env_name, ' '.join(extra_args)))
+        command = (ch.conda_activate_command() + ['&', 'pio', 'run', '-e',
+                                                  env_name, '-t', 'upload',
+                                                  '-t', 'nobuild'] +
+                   list(extra_args))
         print command
-        sp.check_call(command, env=env, cwd=tempdir)
+        sp.check_call(command, env=env, cwd=tempdir, shell=True)
     finally:
         os.chdir(original_dir)
         tempdir.rmtree()
