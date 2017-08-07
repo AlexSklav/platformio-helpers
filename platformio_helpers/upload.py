@@ -113,6 +113,18 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
 
         env = os.environ.copy()
         env['PLATFORMIO_ENVS_DIR'] = str(tempdir)
+
+        # Temporary workaround until we can figure out a way to
+        # launch MicroDrop in a way that runs the
+        # %CONDA_PREFIX%\etc\conda\activate.d scripts. See [1]
+        #
+        # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
+        import conda_helpers as ch
+        env['PLATFORMIO_HOME_DIR'] = str(ch.conda_prefix() /
+            'share' / 'platformio')
+        env['PLATFORMIO_LIB_EXTRA_DIRS']= str(ch.conda_prefix() /
+            'Library' / 'include' / 'Arduino')
+ 
         command = ('pio run -e %s -t upload -t nobuild %s' %
                    (env_name, ' '.join(extra_args)))
         print command
