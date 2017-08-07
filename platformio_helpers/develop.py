@@ -29,6 +29,9 @@ def link(working_dir=None, package_name=None):
     See Also
     --------
     :func:`unlink`
+
+    .. versionchanged:: 0.3.2
+       Create ``.pioenvs`` directory in working directory if it doesn't exist.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
