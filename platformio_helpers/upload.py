@@ -6,38 +6,75 @@ import tempfile as tmp
 import path_helpers as ph
 import conda_helpers as ch
 
-from . import conda_bin_path
+from . import conda_bin_path, available_environments
 
 
-def get_arg_parser():
+def get_arg_parser(project_name=None):
+    '''
+    Returns a base argument parser for setting PlatformIO upload parameters.
+
+    Useful, for example, to extend with additional arguments for specific
+    PlatformIO environments or projects.
+
+    .. versionchanged:: 0.4
+        Fix explicit :data:`args` handling.
+
+    Parameters
+    ----------
+    project_name : str, optional
+        Name of PlatformIO project.
+
+    Returns
+    -------
+    argparse.ArgumentParser
+        Argument parser including common arguments for PlatformIO firmware
+        uploading.
+    '''
     from argparse import ArgumentParser
 
     parser = ArgumentParser(description='Upload firmware to board.')
-    parser.add_argument('env_name', default=None)
+    if project_name is not None:
+        available_environments_ = available_environments(project_name)
+        parser.add_argument('env_name', choices=available_environments_,
+                            help='PlatformIO environment to upload.')
+    else:
+        parser.add_argument('env_name', default=None)
     parser.add_argument('-p', '--port', default=None)
     return parser
 
 
-def parse_args(args=None):
-    """Parses arguments, returns (options, args)."""
+def parse_args(project_name=None, args=None):
+    '''
+    .. versionchanged:: 0.4
+        Fix explicit :data:`args` handling.
+
+    Parameters
+    ----------
+    project_name : str, optional
+        Name of PlatformIO project.
+
+    Returns
+    -------
+    argparse.Namespace
+        Resolved arguments parsed from :data:`args`.
+    '''
     if args is None:
-        args = sys.argv
+        args = sys.argv[1:]
 
-    parser = get_arg_parser()
+    parser = get_arg_parser(project_name=project_name)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     return args
 
 
 def upload_conda(project_name, env_name=None, extra_args=None):
     '''
-    Upload pre-built binary from Conda PlatformIO binaries directory
-    to target.
+    Upload pre-built binary from Conda PlatformIO binaries directory to target.
 
     Parameters
     ----------
-    project_dir : str
-        Path to PlatformIO project directory.
+    project_name : str
+        Name of PlatformIO project.
     env_name : str, optional
         PlatformIO environment name (e.g., ``'teensy31'``).
 
