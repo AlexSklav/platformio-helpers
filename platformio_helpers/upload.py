@@ -16,6 +16,9 @@ def get_arg_parser(project_name=None):
     Useful, for example, to extend with additional arguments for specific
     PlatformIO environments or projects.
 
+    .. versionchanged:: 0.4
+        Fix explicit :data:`args` handling.
+
     Parameters
     ----------
     project_name : str, optional
@@ -42,6 +45,9 @@ def get_arg_parser(project_name=None):
 
 def parse_args(project_name=None, args=None):
     '''
+    .. versionchanged:: 0.4
+        Fix explicit :data:`args` handling.
+
     Parameters
     ----------
     project_name : str, optional

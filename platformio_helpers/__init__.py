@@ -36,6 +36,8 @@ def conda_bin_path():
 
 def available_environments(project_name):
     '''
+    .. versionadded:: 0.4
+
     Parameters
     ----------
     project_name : str
