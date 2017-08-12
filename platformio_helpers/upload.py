@@ -53,11 +53,11 @@ def parse_args(project_name=None, args=None):
         Resolved arguments parsed from :data:`args`.
     '''
     if args is None:
-        args = sys.argv
+        args = sys.argv[1:]
 
     parser = get_arg_parser(project_name=project_name)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     return args
 
 
