@@ -23,12 +23,12 @@ requirements:
     - conda-helpers
     - path_helpers
     - pip
-    - python 2.7*
+    - python
 
   run:
     - conda-helpers
     - path_helpers
-    - python 2.7*
+    - python
 
 test:
   imports:
