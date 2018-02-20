@@ -2,6 +2,11 @@ import platform
 
 import conda_helpers as ch
 
+from ._version import get_versions
+
+__version__ = get_versions()['version']
+del get_versions
+
 
 def conda_arduino_include_path():
     '''
@@ -68,5 +73,3 @@ def available_environments(project_name):
 
         # Return sorted list so result is deterministic.
         return sorted([str(env_i.name) for env_i in project_bin_dir.dirs()])
-
-
