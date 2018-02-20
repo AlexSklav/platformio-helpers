@@ -17,6 +17,8 @@ build:
   # number. If you do not include this key, it defaults to 0.
   number: 0
   script: pip install .
+  #: .. versionadded:: X.X.X
+  noarch: python
 
 requirements:
   build:
