@@ -36,6 +36,8 @@ requirements:
 test:
   imports:
     - platformio_helpers
+    - platformio_helpers.develop
+    - platformio_helpers.upload
 
 about:
   home: https://github.com/wheeler-microfluidics/platformio-helpers
