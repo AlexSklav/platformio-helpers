@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import subprocess as sp
 import sys
@@ -169,7 +171,7 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
                                                   env_name, '-t', 'upload',
                                                   '-t', 'nobuild'] +
                    list(extra_args))
-        print command
+        print(command)
         sp.check_call(command, env=env, cwd=tempdir, shell=True)
     finally:
         os.chdir(original_dir)

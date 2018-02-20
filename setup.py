@@ -1,12 +1,12 @@
-import sys
+from __future__ import absolute_import
 
 import setuptools as st
+import versioneer
 
-sys.path.insert(0, '.')
-import version
 
 st.setup(name='platformio-helpers',
-         version=version.getVersion(),
+         version=versioneer.get_version(),
+         cmdclass=versioneer.get_cmdclass(),
          description='Helpers functions, etc. for PlatformIO projects.',
          keywords='',
          author='Christian Fobel',
