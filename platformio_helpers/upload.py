@@ -133,6 +133,10 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     See also
     --------
     :func:`upload_conda`
+
+    .. versionchanged:: 0.5.2
+        Copy environments to ``.pioenvs`` sub-directory instead of using
+        ``PLATFORMIO_ENVS_DIR`` environment variable (see issue #5).
     '''
     extra_args = extra_args or []
     ini_path = ph.path(ini_path)
@@ -151,14 +155,12 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     try:
         os.chdir(tempdir)
         env_dir = pioenvs_path.joinpath(env_name)
-        temp_env_dir = tempdir.joinpath(env_dir.name)
+        temp_env_dir = tempdir.joinpath('.pioenvs', env_dir.name)
         ini_path.copy(tempdir)
+        temp_env_dir.parent.makedirs_p()
         env_dir.copytree(temp_env_dir)
 
         env = os.environ.copy()
-        # Set the PlatformIO build environments directory for the upload shell
-        # environment.
-        env['PLATFORMIO_ENVS_DIR'] = str(tempdir)
 
         # Run the PlatformIO upload command in an activated Conda environment,
         # e.g., to set `PLATFORMIO_HOME_DIR` and  `PLATFORMIO_LIB_EXTRA_DIRS`
