@@ -8,7 +8,7 @@ import tempfile as tmp
 import path_helpers as ph
 import conda_helpers as ch
 
-from . import conda_bin_path, available_environments
+from . import conda_bin_path, conda_bin_path_05, available_environments
 
 
 def get_arg_parser(project_name=None):
@@ -89,9 +89,21 @@ def upload_conda(project_name, env_name=None, extra_args=None):
     See also
     --------
     :func:`upload`
+
+
+    .. versionchanged:: X.X.X
+        Search for firmware directory in ``<prefix>/share/platformio/bin``
+        (fall back to deprecated <=0.5 binary directory path).
     '''
     extra_args = extra_args or []
-    project_bin_dir = conda_bin_path().joinpath(project_name)
+
+    for bin_path_i in (conda_bin_path(), conda_bin_path_05()):
+        project_bin_dir = bin_path_i.joinpath(project_name)
+        if project_bin_dir.isdir():
+            break
+    else:
+        raise IOError('No binaries found for project `%s`.' % project_name)
+
     if env_name is None:
         if len(project_bin_dir.dirs()) == 1:
             env_name = project_bin_dir.dirs()[0].name
