@@ -9,18 +9,61 @@ __version__ = get_versions()['version']
 del get_versions
 
 
-def conda_arduino_include_path():
+def conda_arduino_include_path_05():
     '''
     Returns
     -------
     path_helpers.path
         Path to Arduino libraries directory in active Conda environment.
+
+
+    .. versionadded:: 0.6
+        Deprecated legacy support function.  See
+        :func:`conda_arduino_include_path`.
     '''
     if platform.system() in ('Linux', 'Darwin'):
         return ch.conda_prefix().joinpath('include', 'Arduino')
     elif platform.system() == 'Windows':
         return ch.conda_prefix().joinpath('Library', 'include', 'Arduino')
     raise 'Unsupported platform: %s' % platform.system()
+
+
+def conda_bin_path_05():
+    '''
+    Returns
+    -------
+    path_helpers.path
+        Path to directory in active Conda environment containing compiled
+        PlatformIO Conda package binaries.
+
+
+    .. versionadded:: 0.6
+        Deprecated legacy support function.  See :func:`conda_bin_path`.
+    '''
+    if platform.system() in ('Linux', 'Darwin'):
+        sys_prefix = ch.conda_prefix()
+    elif platform.system() == 'Windows':
+        sys_prefix = ch.conda_prefix().joinpath('Library')
+    else:
+        raise 'Unsupported platform: %s' % platform.system()
+    return sys_prefix.joinpath('bin', 'platformio')
+
+
+def conda_arduino_include_path():
+    '''
+    Returns
+    -------
+    path_helpers.path
+        Path to Arduino libraries directory in active Conda environment.
+
+
+    .. versionchanged:: 0.6
+        Use ``<prefix>/share/platformio/include`` on **all** platforms.
+
+        See `sci-bots/platformio-helpers#6 <https://github.com/sci-bots/platformio-helpers/issues/6>`_
+        for more information.
+    '''
+    return ch.conda_prefix().joinpath('share', 'platformio', 'include')
 
 
 def conda_bin_path():
@@ -30,14 +73,15 @@ def conda_bin_path():
     path_helpers.path
         Path to directory in active Conda environment containing compiled
         PlatformIO Conda package binaries.
+
+
+    .. versionchanged:: 0.6
+        Use ``<prefix>/share/platformio/bin`` on **all** platforms.
+
+        See `sci-bots/platformio-helpers#6 <https://github.com/sci-bots/platformio-helpers/issues/6>`_
+        for more information.
     '''
-    if platform.system() in ('Linux', 'Darwin'):
-        sys_prefix = ch.conda_prefix()
-    elif platform.system() == 'Windows':
-        sys_prefix = ch.conda_prefix().joinpath('Library')
-    else:
-        raise 'Unsupported platform: %s' % platform.system()
-    return sys_prefix.joinpath('bin', 'platformio')
+    return ch.conda_prefix().joinpath('share', 'platformio', 'bin')
 
 
 def available_environments(project_name):

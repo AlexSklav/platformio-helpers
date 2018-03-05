@@ -5,7 +5,8 @@ import os
 import conda_helpers as ch
 import path_helpers as ph
 
-from . import conda_arduino_include_path, conda_bin_path
+from . import (conda_arduino_include_path, conda_bin_path,
+               conda_arduino_include_path_05, conda_bin_path_05)
 
 
 logger = logging.getLogger(__name__)
@@ -109,6 +110,11 @@ def unlink(working_dir=None, package_name=None):
     See Also
     --------
     :func:`link`
+
+
+    .. versionchanged:: 0.6
+        Search for firmware directory in ``<prefix>/share/platformio/bin``
+        (fall back to deprecated <=0.5 binary directory path).
     '''
     if working_dir is None:
         working_dir = os.getcwd()
@@ -121,29 +127,44 @@ def unlink(working_dir=None, package_name=None):
 
     # Unlink working ``.pioenvs`` directory from Conda ``Library`` directory.
     logger.info('Unlink working firmware directories from Conda environment.')
-    pio_bin_dir = conda_bin_path()
-    fw_bin_dir = pio_bin_dir.joinpath(package_name)
 
-    if fw_bin_dir.exists():
+    # Search for firmware directory (fall back to deprecated <=0.5 binary
+    # directory path).
+    for bin_path_i in (conda_bin_path(), conda_bin_path_05()):
+        fw_bin_dir = bin_path_i.joinpath(package_name)
+        if fw_bin_dir.exists():
+            break
+    else:
+        fw_bin_dir = None
+
+    if fw_bin_dir is not None:
         fw_config_ini = fw_bin_dir.joinpath('platformio.ini')
         if fw_config_ini.exists():
             fw_config_ini.unlink()
         fw_bin_dir.unlink()
 
-    # Unlink working ``lib`` directory from Conda ``Library/include/Arduino``
-    # directory.
+    # Unlink working `lib` directory from Conda
+    # `<prefix>/share/platformio/include` directory
+    # (fall back to deprecated <=0.5 include directory path).
     logger.info('Unlink working firmware libraries from Conda environment.')
-    pio_lib_dir = conda_arduino_include_path()
+    for include_path_i in (conda_arduino_include_path(),
+                           conda_arduino_include_path_05()):
+        include_dir = include_path_i.joinpath(package_name)
+        if include_dir.exists():
+            break
+    else:
+        include_dir = None
+
+    include_dir = conda_arduino_include_path()
     working_lib_dir = working_dir.joinpath('lib')
 
-    if working_lib_dir.isdir():
+    if include_dir is not None and working_lib_dir.isdir():
         for path_i in working_lib_dir.listdir():
-            pio_path_i = pio_lib_dir.joinpath(path_i.name)
+            pio_path_i = include_dir.joinpath(path_i.name)
             if pio_path_i.exists():
                 pio_path_i.unlink()
 
-    # Remove link to ``dmf_control_board_firmware`` Python package in
-    # `conda.pth` in site packages directory.
+    # Remove link to Python package in `conda.pth` in site packages directory.
     logger.info('Unlink working Python directory from Conda environment...')
     ch.conda_exec('develop', '-u', working_dir, verbose=True)
     logger.info(72 * '-' + '\nFinished')
