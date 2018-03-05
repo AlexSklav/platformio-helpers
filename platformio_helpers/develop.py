@@ -112,7 +112,7 @@ def unlink(working_dir=None, package_name=None):
     :func:`link`
 
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.6
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
     '''

@@ -17,7 +17,7 @@ def conda_arduino_include_path_05():
         Path to Arduino libraries directory in active Conda environment.
 
 
-    .. versionadded:: X.X.X
+    .. versionadded:: 0.6
         Deprecated legacy support function.  See
         :func:`conda_arduino_include_path`.
     '''
@@ -37,7 +37,7 @@ def conda_bin_path_05():
         PlatformIO Conda package binaries.
 
 
-    .. versionadded:: X.X.X
+    .. versionadded:: 0.6
         Deprecated legacy support function.  See :func:`conda_bin_path`.
     '''
     if platform.system() in ('Linux', 'Darwin'):
@@ -57,7 +57,7 @@ def conda_arduino_include_path():
         Path to Arduino libraries directory in active Conda environment.
 
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.6
         Use ``<prefix>/share/platformio/include`` on **all** platforms.
 
         See `sci-bots/platformio-helpers#6 <https://github.com/sci-bots/platformio-helpers/issues/6>`_
@@ -75,7 +75,7 @@ def conda_bin_path():
         PlatformIO Conda package binaries.
 
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.6
         Use ``<prefix>/share/platformio/bin`` on **all** platforms.
 
         See `sci-bots/platformio-helpers#6 <https://github.com/sci-bots/platformio-helpers/issues/6>`_

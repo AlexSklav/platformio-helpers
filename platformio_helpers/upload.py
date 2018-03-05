@@ -91,7 +91,7 @@ def upload_conda(project_name, env_name=None, extra_args=None):
     :func:`upload`
 
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.6
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
     '''
