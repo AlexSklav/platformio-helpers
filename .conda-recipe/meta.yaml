@@ -23,14 +23,14 @@ build:
 
 requirements:
   build:
-    - conda-helpers
-    - path_helpers
+    - conda-helpers >=0.14
+    - path_helpers >=0.7
     - pip
     - python
 
   run:
-    - conda-helpers
-    - path_helpers
+    - conda-helpers >=0.14
+    - path_helpers >=0.7
     - python
 
 test:
