@@ -24,14 +24,14 @@ build:
 requirements:
   build:
     - colorama
-    - conda-helpers >=0.15
+    - conda-helpers >=0.19
     - path_helpers >=0.7
     - pip
     - python
 
   run:
     - colorama
-    - conda-helpers >=0.15
+    - conda-helpers >=0.19
     - path_helpers >=0.7
     - python
 

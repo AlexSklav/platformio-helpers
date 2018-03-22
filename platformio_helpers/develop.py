@@ -1,4 +1,4 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, print_function, unicode_literals
 import logging
 import os
 
@@ -18,8 +18,8 @@ def link(working_dir=None, package_name=None):
 
     Perform the following steps:
 
-     - Uninstall package if installed as Conda package.
      - Install build and run-time Conda dependencies.
+     - Uninstall package if installed as Conda package.
      - Link working ``.pioenvs`` directory into Conda ``Library`` directory to
        make development versions of compiled firmware binaries available to
        Python API.
@@ -32,8 +32,13 @@ def link(working_dir=None, package_name=None):
     --------
     :func:`unlink`
 
+
     .. versionchanged:: 0.3.2
        Create ``.pioenvs`` directory in working directory if it doesn't exist.
+
+    .. versionchanged:: X.X.X
+       Add support for packages that are split between a Python package and a
+       `-dev` package.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
@@ -44,22 +49,24 @@ def link(working_dir=None, package_name=None):
     if package_name is None:
         package_name = working_dir.name
 
-    # Uninstall package if installed as Conda package.
-    logger.info('Check if Conda package is installed...')
-    try:
-        version_info = ch.package_version(package_name)
-    except NameError:
-        logger.info('`%s` package is not installed.', package_name)
-    else:
-        logger.info('Uninstall `%s==%s` package...', package_name,
-                    version_info.get('version'))
-        ch.conda_exec('uninstall', '--force', '-y', package_name, verbose=True)
-
     # Install build and run-time Conda dependencies.
     logger.info('Install build and run-time Conda dependencies...')
     recipe_dir = working_dir.joinpath('.conda-recipe').realpath()
     ch.conda_exec('install', '-y', '-n', 'root', 'conda-build', verbose=True)
     ch.development_setup(recipe_dir, verbose=True)
+
+    # Uninstall package if installed as Conda package.
+    logger.info('Check if Conda package is installed...')
+    for package_name_i in (package_name, package_name + '-dev'):
+        try:
+            version_info = ch.package_version(package_name_i)
+        except NameError:
+            logger.info('`%s` package is not installed.', package_name_i)
+        else:
+            logger.info('Uninstall `%s==%s` package...', package_name_i,
+                        version_info.get('version'))
+            ch.conda_exec('uninstall', '--force', '-y', package_name_i,
+                          verbose=True)
 
     # Link working ``.pioenvs`` directory into Conda ``Library`` directory.
     logger.info('Link working firmware directories into Conda environment.')
