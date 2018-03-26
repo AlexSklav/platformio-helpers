@@ -5,10 +5,21 @@ import subprocess as sp
 import sys
 import tempfile as tmp
 
-import path_helpers as ph
+import colorama as co
 import conda_helpers as ch
+import path_helpers as ph
 
 from . import conda_bin_path, conda_bin_path_05, available_environments
+
+
+class UploadError(Exception):
+    def __init__(self, command, working_dir):
+        self.command = command
+        self.working_dir = working_dir
+        message = '\n'.join(['Upload error.',
+                             'Working directory: `{}`'.format(self.working_dir),
+                             'Command: `{}`'.format(self.command)])
+        super(UploadError, self).__init__(message)
 
 
 def get_arg_parser(project_name=None):
@@ -69,7 +80,7 @@ def parse_args(project_name=None, args=None):
     return args
 
 
-def upload_conda(project_name, env_name=None, extra_args=None):
+def upload_conda(project_name, env_name=None, extra_args=None, **kwargs):
     '''
     Upload pre-built binary from Conda PlatformIO binaries directory to target.
 
@@ -94,6 +105,9 @@ def upload_conda(project_name, env_name=None, extra_args=None):
     .. versionchanged:: 0.6
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
+
+    .. versionchanged:: 0.9
+        Pass unknown keyword arguments to :func:`upload` function.
     '''
     extra_args = extra_args or []
 
@@ -111,11 +125,12 @@ def upload_conda(project_name, env_name=None, extra_args=None):
             raise ValueError('Platform environment must be specified '
                              'as one of: %s' %
                              [p.name for p in project_bin_dir.dirs()])
-    upload(project_bin_dir, env_name, pioenvs_path='.', extra_args=extra_args)
+    upload(project_bin_dir, env_name, pioenvs_path='.', extra_args=extra_args,
+           **kwargs)
 
 
 def upload(project_dir, env_name, ini_path='platformio.ini',
-           pioenvs_path='.pioenvs', extra_args=None):
+           pioenvs_path='.pioenvs', extra_args=None, on_error=None):
     '''
     Upload pre-built binary to target.
 
@@ -141,6 +156,9 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
         :data:`project_dir`.
     extra_args : list(str), optional
         List of additional arguments to pass to command line upload command.
+    on_error : callable, optional
+        Call-back function called if upload returns non-zero return code,
+        accepting a :class:`UploadError` instance as the only argument.
 
     See also
     --------
@@ -149,6 +167,9 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     .. versionchanged:: 0.5.2
         Copy environments to ``.pioenvs`` sub-directory instead of using
         ``PLATFORMIO_ENVS_DIR`` environment variable (see issue #5).
+
+    .. versionchanged:: 0.9
+        Add optional ``on_error`` call-back argument.
     '''
     extra_args = extra_args or []
     ini_path = ph.path(ini_path)
@@ -165,14 +186,15 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     original_dir = os.getcwd()
 
     try:
+        # Change into temporary directory, since PlatformIO tools look for
+        # `.pioenvs` in current working directory.
         os.chdir(tempdir)
+        print(co.Fore.MAGENTA + 'Working directory:', co.Fore.WHITE + tempdir)
         env_dir = pioenvs_path.joinpath(env_name)
         temp_env_dir = tempdir.joinpath('.pioenvs', env_dir.name)
         ini_path.copy(tempdir)
         temp_env_dir.parent.makedirs_p()
         env_dir.copytree(temp_env_dir)
-
-        env = os.environ.copy()
 
         # Run the PlatformIO upload command in an activated Conda environment,
         # e.g., to set `PLATFORMIO_HOME_DIR` and  `PLATFORMIO_LIB_EXTRA_DIRS`
@@ -185,8 +207,22 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
                                                   env_name, '-t', 'upload',
                                                   '-t', 'nobuild'] +
                    list(extra_args))
-        print(command)
-        sp.check_call(command, env=env, cwd=tempdir, shell=True)
+
+        print(co.Fore.MAGENTA + 'Executing:',
+              co.Fore.WHITE + sp.list2cmdline(command))
+
+        returncode, stdout, stderr = ch.with_loop(ch.run_command)(command,
+                                                                  shell=True,
+                                                                  verbose=True)
+        if returncode != 0:
+            print(co.Back.RED + co.Fore.WHITE + 'Error uploading:')
+            print(co.Back.RESET + co.Fore.RED + stderr)
+
+            exception = UploadError(tempdir, sp.list2cmdline(command))
+            if on_error is not None:
+                on_error(exception)
+            else:
+                raise exception
     finally:
         os.chdir(original_dir)
         tempdir.rmtree()
