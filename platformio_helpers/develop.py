@@ -36,7 +36,7 @@ def link(working_dir=None, package_name=None):
     .. versionchanged:: 0.3.2
        Create ``.pioenvs`` directory in working directory if it doesn't exist.
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.10
        Add support for packages that are split between a Python package and a
        `-dev` package.
     '''
@@ -123,7 +123,7 @@ def unlink(working_dir=None, package_name=None):
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.10
        Add support for packages that are split between a Python package and a
        `-dev` package.
     '''
