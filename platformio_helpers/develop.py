@@ -122,6 +122,10 @@ def unlink(working_dir=None, package_name=None):
     .. versionchanged:: 0.6
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
+
+    .. versionchanged:: X.X.X
+       Add support for packages that are split between a Python package and a
+       `-dev` package.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
@@ -154,15 +158,17 @@ def unlink(working_dir=None, package_name=None):
     # `<prefix>/share/platformio/include` directory
     # (fall back to deprecated <=0.5 include directory path).
     logger.info('Unlink working firmware libraries from Conda environment.')
+
+    package_names = (package_name, package_name + '-dev')
     for include_path_i in (conda_arduino_include_path(),
                            conda_arduino_include_path_05()):
-        include_dir = include_path_i.joinpath(package_name)
-        if include_dir.exists():
-            break
+        for package_name_j in package_names:
+            include_dir_j = include_path_i.joinpath(package_name_j)
+            if include_dir_j.exists():
+                break
     else:
         include_dir = None
 
-    include_dir = conda_arduino_include_path()
     working_lib_dir = working_dir.joinpath('lib')
 
     if include_dir is not None and working_lib_dir.isdir():
