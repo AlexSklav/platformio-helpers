@@ -93,9 +93,15 @@ def link(working_dir=None, package_name=None):
     if working_lib_dir.isdir():
         pio_lib_dir.makedirs_p()
         for file_i in working_lib_dir.files():
-            file_i.link(pio_lib_dir.joinpath(file_i.name))
+            target_i = pio_lib_dir.joinpath(file_i.name)
+            if target_i.exists():
+                target_i.unlink()
+            file_i.link(target_i)
         for dir_i in working_lib_dir.dirs():
-            dir_i.junction(pio_lib_dir.joinpath(dir_i.name))
+            target_i = pio_lib_dir.joinpath(dir_i.name)
+            if target_i.isjunction() or target_i.islink():
+                target_i.unlink()
+            dir_i.junction(target_i)
 
     # Link ``dmf_control_board_firmware`` Python package `conda.pth` in site
     # packages directory.
