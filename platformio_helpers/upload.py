@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import os
+import platform
 import subprocess as sp
 import sys
 import tempfile as tmp
@@ -170,6 +171,13 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
 
     .. versionchanged:: 0.9
         Add optional ``on_error`` call-back argument.
+
+    .. versionchanged:: 0.10.1
+        Run ``pio`` wrapped using ``conda-wrappers`` package, which performs a
+        *"pseudo-activation"* of the Conda environment, but a) is >50x faster
+        than *actually* activating the environment; and b) supports running in
+        a packaged environment where no ``conda`` executable is on the system
+        path.
     '''
     extra_args = extra_args or []
     ini_path = ph.path(ini_path)
@@ -196,17 +204,18 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
         temp_env_dir.parent.makedirs_p()
         env_dir.copytree(temp_env_dir)
 
-        # Run the PlatformIO upload command in an activated Conda environment,
-        # e.g., to set `PLATFORMIO_HOME_DIR` and  `PLATFORMIO_LIB_EXTRA_DIRS`
-        # environment variables.
+        # Run the PlatformIO upload command in a pseudo-activated Conda
+        # environment, e.g., to set `PLATFORMIO_HOME_DIR` and
+        # `PLATFORMIO_LIB_EXTRA_DIRS` environment variables.
         #
         # See [issue #3][1].
         #
         # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
-        command = (ch.conda_activate_command() + ['&', 'pio', 'run', '-e',
-                                                  env_name, '-t', 'upload',
-                                                  '-t', 'nobuild'] +
-                   list(extra_args))
+        command = [ch.conda_prefix().joinpath('Scripts' if platform.system()
+                                              == 'Windows' else 'bin',
+                                              'wrappers', 'conda', 'run-in'),
+                   'pio', 'run', '-e', env_name, '-t', 'upload', '-t',
+                   'nobuild'] + list(extra_args)
 
         print(co.Fore.MAGENTA + 'Executing:',
               co.Fore.WHITE + sp.list2cmdline(command))

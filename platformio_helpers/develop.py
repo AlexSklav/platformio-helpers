@@ -39,6 +39,9 @@ def link(working_dir=None, package_name=None):
     .. versionchanged:: 0.10
        Add support for packages that are split between a Python package and a
        `-dev` package.
+
+    .. versionchanged:: 0.10.1
+       Remove any existing links to ``lib`` contents.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
@@ -93,9 +96,15 @@ def link(working_dir=None, package_name=None):
     if working_lib_dir.isdir():
         pio_lib_dir.makedirs_p()
         for file_i in working_lib_dir.files():
-            file_i.link(pio_lib_dir.joinpath(file_i.name))
+            target_i = pio_lib_dir.joinpath(file_i.name)
+            if target_i.exists():
+                target_i.unlink()
+            file_i.link(target_i)
         for dir_i in working_lib_dir.dirs():
-            dir_i.junction(pio_lib_dir.joinpath(dir_i.name))
+            target_i = pio_lib_dir.joinpath(dir_i.name)
+            if target_i.isjunction() or target_i.islink():
+                target_i.unlink()
+            dir_i.junction(target_i)
 
     # Link ``dmf_control_board_firmware`` Python package `conda.pth` in site
     # packages directory.
