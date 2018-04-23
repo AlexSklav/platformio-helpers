@@ -172,7 +172,7 @@ def upload(project_dir, env_name, ini_path='platformio.ini',
     .. versionchanged:: 0.9
         Add optional ``on_error`` call-back argument.
 
-    .. versionchanged:: X.X.X
+    .. versionchanged:: 0.10.1
         Run ``pio`` wrapped using ``conda-wrappers`` package, which performs a
         *"pseudo-activation"* of the Conda environment, but a) is >50x faster
         than *actually* activating the environment; and b) supports running in

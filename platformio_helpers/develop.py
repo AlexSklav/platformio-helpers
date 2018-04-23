@@ -39,6 +39,9 @@ def link(working_dir=None, package_name=None):
     .. versionchanged:: 0.10
        Add support for packages that are split between a Python package and a
        `-dev` package.
+
+    .. versionchanged:: 0.10.1
+       Remove any existing links to ``lib`` contents.
     '''
     if working_dir is None:
         working_dir = os.getcwd()
