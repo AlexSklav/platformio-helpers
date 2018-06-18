@@ -32,6 +32,7 @@ requirements:
   run:
     - colorama
     - conda-helpers >=0.21
+    - conda-wrappers
     - path_helpers >=0.7
     - python
 
