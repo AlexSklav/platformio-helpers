@@ -3,11 +3,6 @@
 {% else %}
 {% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] %}
 {% endif %}
-# source will be downloaded prior to filling in jinja templates
-# Example assumes that this folder has setup.py in it
-source:
-  git_url: ../
-
 package:
   name: platformio-helpers
   version: {{ GIT_VERSION }}
@@ -23,18 +18,16 @@ build:
 
 requirements:
   build:
+    - python {{ python }}
     - colorama
-    - conda-helpers >=0.21
-    - path_helpers >=0.7
-    - pip
-    - python
+    - conda-helpers
+    - path-helpers
 
   run:
+    - python {{ python }}
     - colorama
-    - conda-helpers >=0.21
-    - conda-wrappers
-    - path_helpers >=0.7
-    - python
+    - conda-helpers
+    - path-helpers
 
 test:
   imports:
@@ -50,6 +43,8 @@ about:
   summary: 'Helper functions, etc. for PlatformIO projects'
   # doc_url:  http://platformio-helpers.readthedocs.org
 
-extra:
-  recipe-maintainers:
-    - cfobel
+
+# source will be downloaded prior to filling in jinja templates
+# Example assumes that this folder has setup.py in it
+source:
+  git_url: ../

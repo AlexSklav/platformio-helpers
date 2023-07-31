@@ -1,6 +1,6 @@
-from __future__ import absolute_import, print_function, unicode_literals
-import logging
+# coding: utf-8
 import os
+import logging
 
 import conda_helpers as ch
 import path_helpers as ph
@@ -12,8 +12,8 @@ from . import (conda_arduino_include_path, conda_bin_path,
 logger = logging.getLogger(__name__)
 
 
-def link(working_dir=None, package_name=None):
-    '''
+def link(working_dir: str = None, package_name: str = None) -> None:
+    """
     Prepare development environment.
 
     Perform the following steps:
@@ -32,7 +32,8 @@ def link(working_dir=None, package_name=None):
     --------
     :func:`unlink`
 
-
+    Version log
+    -----------
     .. versionchanged:: 0.3.2
        Create ``.pioenvs`` directory in working directory if it doesn't exist.
 
@@ -42,7 +43,7 @@ def link(working_dir=None, package_name=None):
 
     .. versionchanged:: 0.10.1
        Remove any existing links to ``lib`` contents.
-    '''
+    """
     if working_dir is None:
         working_dir = os.getcwd()
 
@@ -64,12 +65,10 @@ def link(working_dir=None, package_name=None):
         try:
             version_info = ch.package_version(package_name_i)
         except NameError:
-            logger.info('`%s` package is not installed.', package_name_i)
+            logger.info(f'`{package_name_i}` package is not installed.')
         else:
-            logger.info('Uninstall `%s==%s` package...', package_name_i,
-                        version_info.get('version'))
-            ch.conda_exec('uninstall', '--force', '-y', package_name_i,
-                          verbose=True)
+            logger.info(f"Uninstall `{package_name_i}=={version_info.get('version')}` package...")
+            ch.conda_exec('uninstall', '--force', '-y', package_name_i, verbose=True)
 
     # Link working ``.pioenvs`` directory into Conda ``Library`` directory.
     logger.info('Link working firmware directories into Conda environment.')
@@ -113,8 +112,8 @@ def link(working_dir=None, package_name=None):
     logger.info(72 * '-' + '\nFinished')
 
 
-def unlink(working_dir=None, package_name=None):
-    '''
+def unlink(working_dir: str = None, package_name: str = None) -> None:
+    """
     Restore original (i.e., non-development) environment.
 
     Perform the following steps:
@@ -127,7 +126,8 @@ def unlink(working_dir=None, package_name=None):
     --------
     :func:`link`
 
-
+    Version log
+    -----------
     .. versionchanged:: 0.6
         Search for firmware directory in ``<prefix>/share/platformio/bin``
         (fall back to deprecated <=0.5 binary directory path).
@@ -135,7 +135,7 @@ def unlink(working_dir=None, package_name=None):
     .. versionchanged:: 0.10
        Add support for packages that are split between a Python package and a
        `-dev` package.
-    '''
+    """
     if working_dir is None:
         working_dir = os.getcwd()
 
@@ -169,8 +169,7 @@ def unlink(working_dir=None, package_name=None):
     logger.info('Unlink working firmware libraries from Conda environment.')
 
     package_names = (package_name, package_name + '-dev')
-    for include_path_i in (conda_arduino_include_path(),
-                           conda_arduino_include_path_05()):
+    for include_path_i in (conda_arduino_include_path(), conda_arduino_include_path_05()):
         for package_name_j in package_names:
             include_dir_j = include_path_i.joinpath(package_name_j)
             if include_dir_j.exists():
