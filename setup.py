@@ -10,9 +10,8 @@ setup(name='platformio-helpers',
       keywords='',
       author='Christian Fobel',
       author_email='christian@fobel.net',
-      url='https://github.com/wheeler-microfluidics/platformio-helpers',
+      url='https://github.com/sci-bots/platformio-helpers',
       license='BSD',
       packages=['platformio_helpers'],
-      install_requires=['conda-helpers'],
       # Install data listed in `MANIFEST.in`
       include_package_data=True)

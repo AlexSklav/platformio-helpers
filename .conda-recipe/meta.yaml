@@ -3,48 +3,48 @@
 {% else %}
 {% set GIT_VERSION = GIT_DESCRIBE_TAG[1:] %}
 {% endif %}
+{% set PKG_NAME = 'platformio-helpers' %}
+{% set MODULE_NAME = PKG_NAME.replace('-', '_') %}
 package:
-  name: platformio-helpers
+  name: {{ PKG_NAME }}
   version: {{ GIT_VERSION }}
 
 build:
   # If this is a new build for the same version, increment the build
   # number. If you do not include this key, it defaults to 0.
   number: 0
-  #: .. versionchanged:: 0.5
   script: python setup.py install --single-version-externally-managed --record record.txt
-  #: .. versionadded:: 0.5
   noarch: python
 
 requirements:
   build:
-    - python {{ python }}
+    - python >=3.8
     - colorama
     - conda-helpers
     - path-helpers
 
   run:
-    - python {{ python }}
+    - python >=3.8
     - colorama
     - conda-helpers
     - path-helpers
 
 test:
   imports:
-    - platformio_helpers
-    - platformio_helpers.develop
-    - platformio_helpers.upload
+    - {{ MODULE_NAME }}
+    - {{ MODULE_NAME }}.develop
+    - {{ MODULE_NAME }}.upload
 
 about:
-  home: https://github.com/wheeler-microfluidics/platformio-helpers
+  home: https://github.com/sci-bots/{{ PKG_NAME }}
   license: BSD 3-Clause
   license_family: BSD
   license_file: LICENSE.md
-  summary: 'Helper functions, etc. for PlatformIO projects'
+  summary: Helper functions, etc. for PlatformIO projects
   # doc_url:  http://platformio-helpers.readthedocs.org
-
 
 # source will be downloaded prior to filling in jinja templates
 # Example assumes that this folder has setup.py in it
 source:
-  git_url: ../
+#  git_url: ../
+  path: ..

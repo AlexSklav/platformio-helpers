@@ -178,10 +178,10 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         Add optional ``on_error`` call-back argument.
 
     .. versionchanged:: 0.10.1
-        Run ``pio`` wrapped using ``conda-wrappers`` package, which performs a
+        Run ``pio`` wrapped using ``.conda-recipe-wrappers`` package, which performs a
         *"pseudo-activation"* of the Conda environment, but a) is >50x faster
         than *actually* activating the environment; and b) supports running in
-        a packaged environment where no ``conda`` executable is on the system
+        a packaged environment where no ``.conda-recipe`` executable is on the system
         path.
     """
     extra_args = extra_args or []
@@ -218,7 +218,7 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
         command = [ch.conda_prefix().joinpath('Scripts' if platform.system()
                                                            == 'Windows' else 'bin',
-                                              'wrappers', 'conda', 'run-in'),
+                                              'wrappers', '.conda-recipe', 'run-in'),
                    'pio', 'run', '-e', env_name, '-t', 'upload', '-t',
                    'nobuild'] + list(extra_args)
 
