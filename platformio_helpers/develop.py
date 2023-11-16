@@ -55,8 +55,8 @@ def link(working_dir: str = None, package_name: str = None) -> None:
 
     # Install build and run-time Conda dependencies.
     logger.info('Install build and run-time Conda dependencies...')
-    recipe_dir = working_dir.joinpath('..conda-recipe-recipe').realpath()
-    ch.conda_exec('install', '-y', '-n', 'root', '.conda-recipe-build', verbose=True)
+    recipe_dir = working_dir.joinpath('.conda-recipe').realpath()
+    ch.conda_exec('install', '-y', '-n', 'root', '.conda-build', verbose=True)
     ch.development_setup(recipe_dir, verbose=True)
 
     # Uninstall package if installed as Conda package.
@@ -105,7 +105,7 @@ def link(working_dir: str = None, package_name: str = None) -> None:
                 target_i.unlink()
             dir_i.junction(target_i)
 
-    # Link ``dmf_control_board_firmware`` Python package `.conda-recipe.pth` in site
+    # Link ``dmf_control_board_firmware`` Python package `.conda.pth` in site
     # packages directory.
     logger.info('Link working Python directory into Conda environment...')
     ch.conda_exec('develop', working_dir, verbose=True)
@@ -185,7 +185,7 @@ def unlink(working_dir: str = None, package_name: str = None) -> None:
             if pio_path_i.exists():
                 pio_path_i.unlink()
 
-    # Remove link to Python package in `.conda-recipe.pth` in site packages directory.
+    # Remove link to Python package in `.conda.pth` in site packages directory.
     logger.info('Unlink working Python directory from Conda environment...')
     ch.conda_exec('develop', '-u', working_dir, verbose=True)
     logger.info(72 * '-' + '\nFinished')
