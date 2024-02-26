@@ -18,13 +18,13 @@ build:
 
 requirements:
   build:
-    - python >=3.8
+    - python >=3.6
     - colorama
     - conda-helpers
     - path-helpers
 
   run:
-    - python >=3.8
+    - python >=3.6
     - colorama
     - conda-helpers
     - path-helpers
