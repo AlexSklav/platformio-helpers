@@ -12,7 +12,7 @@ import conda_helpers as ch
 import path_helpers as ph
 
 from argparse import ArgumentParser
-from . import conda_bin_path, conda_bin_path_05, available_environments
+from . import conda_bin_path, conda_bin_path_05, available_environments, conda_arduino_include_path
 
 
 class UploadError(Exception):
@@ -194,6 +194,13 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
     ini_path = ini_path.realpath()
     pioenvs_path = pioenvs_path.realpath()
 
+    print(f"{co.Fore.CYAN}Using firmware from:{co.Fore.WHITE} {project_dir}")
+    
+    env_vars = os.environ.copy()
+    pio_lib_extra_dirs = str(conda_arduino_include_path())
+    env_vars['PLATFORMIO_LIB_EXTRA_DIRS'] = pio_lib_extra_dirs
+    print(f"{co.Fore.CYAN}PLATFORMIO_LIB_EXTRA_DIRS={co.Fore.WHITE} {pio_lib_extra_dirs}")
+
     # Create temporary directory.
     tempdir = ph.path(tmp.mkdtemp(prefix=f'platformio-{project_dir.name}-'))
     original_dir = os.getcwd()
@@ -204,10 +211,16 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         os.chdir(tempdir)
         print(f'{co.Fore.MAGENTA}Working directory: {co.Fore.WHITE}{tempdir}')
         env_dir = pioenvs_path.joinpath(env_name)
-        temp_env_dir = tempdir.joinpath('.pioenvs', env_dir.name)
+
         ini_path.copy(tempdir)
+        temp_env_dir = tempdir.joinpath('.pio', 'build', env_dir.name)
         temp_env_dir.parent.makedirs_p()
         env_dir.copytree(temp_env_dir)
+        # rename the temp_env_dir to upload
+        # temp_env_dir = temp_env_dir.rename(temp_env_dir.parent.joinpath('upload'))
+
+        print(f"{co.Fore.CYAN}Project directory:{co.Fore.WHITE} {temp_env_dir}")
+        
 
         # Run the PlatformIO upload command in a pseudo-activated Conda
         # environment, e.g., to set `PLATFORMIO_HOME_DIR` and
@@ -216,18 +229,21 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         # See [issue #3][1].
         #
         # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
-        command = [ch.conda_prefix().joinpath('Scripts' if platform.system()
-                                                           == 'Windows' else 'bin',
-                                              'wrappers', '.conda', 'run-in'),
-                   'pio', 'run', '-e', env_name, '-t', 'upload', '-t',
-                   'nobuild'] + list(extra_args)
+        command = ['pio', 'run', '-e', env_dir.name, '-t', 'nobuild',
+                   '-t', 'upload', '--disable-auto-clean'] + list(extra_args)
 
-        print(f'{co.Fore.MAGENTA}Executing: {co.Fore.WHITE}{sp.list2cmdline(command)}')
-
-        returncode, stdout, stderr = ch.with_loop(ch.run_command)(command, shell=True, verbose=True)
-        if returncode != 0:
-            print(f'{co.Back.RED}{co.Fore.WHITE}Error uploading:')
-            print(f'{co.Back.RESET}{co.Fore.RED}{stderr}')
+        print(f'{co.Fore.MAGENTA}Executing PlatformIO upload: {co.Fore.WHITE}{sp.list2cmdline(command)}')
+        process = sp.run(command, shell=False, env=env_vars, stdout=sp.PIPE, stderr=sp.PIPE,
+                        universal_newlines=True, check=False)
+        
+        if process.returncode == 0:
+            print(f'{co.Fore.GREEN}PlatformIO upload successful!')
+            return
+        
+        else:
+            # If PlatformIO approach fails, proceed to next method
+            print(f"{co.Fore.RED}PlatformIO upload failed.")
+            print(f"{co.Fore.YELLOW}Error: {process.stderr}")
 
             exception = UploadError(tempdir, sp.list2cmdline(command))
             if on_error is not None:
