@@ -199,7 +199,7 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
     env_vars = os.environ.copy()
     pio_lib_extra_dirs = str(conda_arduino_include_path())
     env_vars['PLATFORMIO_LIB_EXTRA_DIRS'] = pio_lib_extra_dirs
-    print(f"{co.Fore.CYAN}PLATFORMIO_LIB_EXTRA_DIRS={co.Fore.WHITE} {pio_lib_extra_dirs}")
+    print(f"{co.Fore.LIGHTYELLOW_EX}PLATFORMIO_LIB_EXTRA_DIRS={co.Fore.WHITE} {pio_lib_extra_dirs}")
 
     # Create temporary directory.
     tempdir = ph.path(tmp.mkdtemp(prefix=f'platformio-{project_dir.name}-'))
@@ -209,18 +209,13 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         # Change into temporary directory, since PlatformIO tools look for
         # `.pioenvs` in current working directory.
         os.chdir(tempdir)
-        print(f'{co.Fore.MAGENTA}Working directory: {co.Fore.WHITE}{tempdir}')
+        print(f'{co.Fore.LIGHTGREEN_EX}Working directory: {co.Fore.WHITE}{tempdir}')
         env_dir = pioenvs_path.joinpath(env_name)
 
         ini_path.copy(tempdir)
         temp_env_dir = tempdir.joinpath('.pio', 'build', env_dir.name)
         temp_env_dir.parent.makedirs_p()
-        env_dir.copytree(temp_env_dir)
-        # rename the temp_env_dir to upload
-        # temp_env_dir = temp_env_dir.rename(temp_env_dir.parent.joinpath('upload'))
-
-        print(f"{co.Fore.CYAN}Project directory:{co.Fore.WHITE} {temp_env_dir}")
-        
+        env_dir.copytree(temp_env_dir)        
 
         # Run the PlatformIO upload command in a pseudo-activated Conda
         # environment, e.g., to set `PLATFORMIO_HOME_DIR` and
