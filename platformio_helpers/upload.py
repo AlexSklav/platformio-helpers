@@ -134,7 +134,7 @@ def upload_conda(project_name: str, env_name: Optional[str] = None, extra_args: 
 
 def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformio.ini',
            pioenvs_path: Optional[str] = '.pioenvs', extra_args: Optional[List[str]] = None,
-           on_error: Optional[Callable] = None) -> None:
+           on_error: Optional[Callable] = None, spi: Optional[bool] = False) -> None:
     """
     Upload pre-built binary to target.
 
@@ -183,6 +183,10 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         than *actually* activating the environment; and b) supports running in
         a packaged environment where no ``.conda`` executable is on the system
         path.
+    .. versionchanged:: 0.10.5
+        Add support for SPI upload method, which is used by
+        `hv-switching-board-firmware <
+        Currently the default platformio upload method fails, so we override with a scons script.
     """
     extra_args = extra_args or []
     ini_path = ph.path(ini_path)
@@ -195,7 +199,7 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
     pioenvs_path = pioenvs_path.realpath()
 
     print(f"{co.Fore.CYAN}Using firmware from:{co.Fore.WHITE} {project_dir}")
-    
+
     env_vars = os.environ.copy()
     pio_lib_extra_dirs = str(conda_arduino_include_path())
     env_vars['PLATFORMIO_LIB_EXTRA_DIRS'] = pio_lib_extra_dirs
@@ -215,7 +219,15 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         ini_path.copy(tempdir)
         temp_env_dir = tempdir.joinpath('.pio', 'build', env_dir.name)
         temp_env_dir.parent.makedirs_p()
-        env_dir.copytree(temp_env_dir)        
+        env_dir.copytree(temp_env_dir)
+
+        # if there is a scons script (under any scons directory at the parent level), copy it too
+        scons_dir = project_dir.dirs('*scons*')
+        if len(scons_dir):
+            for dir_ in scons_dir:
+                print(
+                    f'{co.Fore.LIGHTBLUE_EX}Found SCons directory:{co.Fore.WHITE} {dir_}, copying to temporary directory.')
+                dir_.copytree(tempdir.joinpath(dir_.name))
 
         # Run the PlatformIO upload command in a pseudo-activated Conda
         # environment, e.g., to set `PLATFORMIO_HOME_DIR` and
@@ -225,16 +237,22 @@ def upload(project_dir: str, env_name: str, ini_path: Optional[str] = 'platformi
         #
         # [1]: https://github.com/wheeler-microfluidics/platformio-helpers/issues/3
         command = ['pio', 'run', '-e', env_dir.name, '-t', 'nobuild',
-                   '-t', 'upload', '--disable-auto-clean'] + list(extra_args)
+                   '--disable-auto-clean'] + list(extra_args)
+
+        if not spi:
+            # If not using SPI upload, add the upload target.
+            # This is the default upload target for most
+            # PlatformIO environments.
+            command += ['-t', 'upload']
 
         print(f'{co.Fore.MAGENTA}Executing PlatformIO upload: {co.Fore.WHITE}{sp.list2cmdline(command)}')
-        process = sp.run(command, shell=False, env=env_vars, stdout=sp.PIPE, stderr=sp.PIPE,
-                        universal_newlines=True, check=False)
-        
+        process = sp.run(command, shell=False, env=env_vars, stderr=sp.PIPE,
+                         universal_newlines=True, check=False)
+
         if process.returncode == 0:
             print(f'{co.Fore.GREEN}PlatformIO upload successful!')
             return
-        
+
         else:
             # If PlatformIO approach fails, proceed to next method
             print(f"{co.Fore.RED}PlatformIO upload failed.")
