@@ -22,6 +22,7 @@ requirements:
     - colorama
     - conda-helpers
     - path-helpers
+    - setuptools
 
   run:
     - python >=3.6

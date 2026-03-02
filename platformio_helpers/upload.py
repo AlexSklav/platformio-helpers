@@ -20,7 +20,7 @@ class UploadError(Exception):
         self.command = command
         self.working_dir = working_dir
         message = f'\nUpload error.\nWorking directory: `{self.working_dir}`\nCommand: `{self.command}`'
-        super(UploadError, self).__init__(message)
+        super().__init__(message)
 
 
 def get_arg_parser(project_name: Optional[str] = None) -> ArgumentParser:

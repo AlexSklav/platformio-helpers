@@ -27,7 +27,7 @@ def conda_arduino_include_path_05() -> ph.path:
         return ch.conda_prefix().joinpath('include', 'Arduino')
     elif platform.system() == 'Windows':
         return ch.conda_prefix().joinpath('Library', 'include', 'Arduino')
-    raise f'Unsupported platform: {platform.system()}'
+    raise RuntimeError(f'Unsupported platform: {platform.system()}')
 
 
 def conda_bin_path_05() -> ph.path:
@@ -47,7 +47,7 @@ def conda_bin_path_05() -> ph.path:
     elif platform.system() == 'Windows':
         sys_prefix = ch.conda_prefix().joinpath('Library')
     else:
-        raise f'Unsupported platform: {platform.system()}'
+        raise RuntimeError(f'Unsupported platform: {platform.system()}')
     return sys_prefix.joinpath('bin', 'platformio')
 
 
